@@ -5,6 +5,7 @@ local M = {}
 ---@usage `require('select-hxml').setup()`
 function M.setup()
   M.create_select_hxml_command()
+  M.create_select_hxml_all_command()
 end
 
 --- Creates |:SelectHxml| command
@@ -13,6 +14,15 @@ function M.create_select_hxml_command()
     M.select_hxml()
   end, {
     desc = "Select hxml file",
+  })
+end
+
+--- Creates |:SelectHxmlAll| command
+function M.create_select_hxml_all_command()
+  vim.api.nvim_create_user_command("SelectHxmlAll", function()
+    M.select_hxml_all()
+  end, {
+    desc = "Select all hxml file",
   })
 end
 
@@ -94,6 +104,33 @@ function M.select_hxml()
       end
     end
   end)
+end
+
+--- Select all `*.hxml`s and send it to haxe-language-server.
+function M.select_hxml_all()
+  local client = M.get_lsp_client()
+
+  if client == nil then
+    vim.notify("haxe_language_server is not activated")
+    return
+  end
+
+  local root = (client.workspace_folders or {})[1]
+
+  if root == nil then
+    vim.notify("workspace folder is not detected")
+    return
+  end
+
+  local hxml_paths = M.find_hxml(root.name)
+
+  local success = M.set_display_arguments(client, hxml_paths)
+
+  if success then
+    vim.notify("Success set all hxml files", vim.log.levels.INFO)
+  else
+    vim.notify("Failed set all hxml files ", vim.log.levels.ERROR)
+  end
 end
 
 return M
