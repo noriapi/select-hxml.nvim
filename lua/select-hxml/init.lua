@@ -23,11 +23,23 @@ function M.get_lsp_client()
   return clients[1]
 end
 
+--- Get relative path `from` `to`.
+---@param from string
+---@param to string
+---@return string
+local function get_relative_path(from, to)
+  return tostring(require("plenary.path"):new(to):make_relative(from))
+end
+
 --- Find `*.hxml` files under `root`
 ---@param root string
+---@return string[]
 function M.find_hxml(root)
   local query = tostring(require("plenary.path"):new(root):joinpath("**", "*.hxml"))
-  return vim.fn.glob(query, false, true)
+  local hxml_abs_paths = vim.fn.glob(query, false, true)
+  return vim.tbl_map(function(abs_path)
+    return get_relative_path(root, abs_path)
+  end, hxml_abs_paths)
 end
 
 --- Set `displayArguments`
@@ -51,14 +63,6 @@ local function select_hxml(hxml_path_list, on_choice, format_item)
   }, function(choice, index)
     on_choice(choice, index)
   end)
-end
-
---- Get relative path `from` `to`.
----@param from string
----@param to string
----@return string
-local function get_relative_path(from, to)
-  return tostring(require("plenary.path"):new(to):make_relative(from))
 end
 
 --- Select a `*.hxml` and send it to haxe-language-server.
@@ -89,8 +93,6 @@ function M.select_hxml()
         vim.notify("Failed set " .. hxml_path, vim.log.levels.ERROR)
       end
     end
-  end, function(item)
-    return get_relative_path(root.name, item)
   end)
 end
 
