@@ -4,6 +4,10 @@
 
 Select a `*.hxml` file and send it to haxe-language-server.
 
+`:SelectHxmlAll`
+
+Select all `*.hxml` files and send it to haxe-language-server.
+
 ## dependencies
 
 - [plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
